@@ -36,7 +36,7 @@ password := "somepass"
 sync := false
 
 // save a password
-err := simpleKeychain.Save(group, name, account, password, false)
+err := simpleKeychain.Save(group, name, account, password, sync)
 
 
 // load a password

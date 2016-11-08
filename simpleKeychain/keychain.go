@@ -1,3 +1,8 @@
+// Package simpleKeychain provides a few simple functions
+// for working with generic passwords in the local OSX keychain.
+// It is basically a very simple wrapper for
+// github.com/keybase/go-keychain which does all the heavy
+// lifting.
 package simpleKeychain
 
 import (
@@ -6,28 +11,25 @@ import (
 	keychain "github.com/keybase/go-keychain"
 )
 
-// ErrKeyChainItemNotFound is the returned by Load when no match is found
+// ErrKeyChainItemNotFound is the error returned by Load when no match is found
 var ErrKeyChainItemNotFound = errors.New("keychain item not found")
 
-// Save will save a generic password item with the specified params
-//   group: the AccessGroup, used for having several apps in the same group
-//          to share the same keychain data.
-//   name: the name of the keychain item
-//   user: the account for the keychain item
-//   pass: the password to save
-//   sync: the keychain item may be synced (icloud?), use false to keep local
-func Save(group string, name string, user string, pass string) error {
+// Save will save a generic password item with the specified params.  Group is
+// the unique access group determining which apps can access the data.  Name is
+// the keychain item name.  Account is the account for which we are saving a
+// password.  Password is the actual password to save.
+func Save(group string, name string, account string, password string) error {
 	// populate enough to delete any existing value
 	item := keychain.NewItem()
 	item.SetSecClass(keychain.SecClassGenericPassword)
 	item.SetService(name)
-	item.SetAccount(user)
+	item.SetAccount(account)
 	keychain.DeleteItem(item)
 
 	// populate the rest of the object and save
 	item.SetLabel(name)
 	item.SetAccessGroup(group)
-	item.SetData([]byte(pass))
+	item.SetData([]byte(password))
 	item.SetSynchronizable(keychain.SynchronizableNo)
 	item.SetAccessible(keychain.AccessibleAccessibleAlwaysThisDeviceOnly)
 
@@ -35,16 +37,14 @@ func Save(group string, name string, user string, pass string) error {
 	return err
 }
 
-// Load will attempt to dig up the password from the keychain for given params
-//    group: the access group, used by a suite of apps to share the same
-//           keychain data
-//    name: the keychain item name
-//    user: the keychain item account
-func Load(group string, account string, user string) (pass string, err error) {
+// Load will attempt to dig up the password from the keychain for given params.
+// Group is the unique access group.  Name is the keychain item name.  Account
+// is the account for which we want the password.
+func Load(group string, name string, account string) (pass string, err error) {
 	item := keychain.NewItem()
 	item.SetSecClass(keychain.SecClassGenericPassword)
-	item.SetService(account)
-	item.SetAccount(user)
+	item.SetService(name)
+	item.SetAccount(account)
 	item.SetAccessGroup(group)
 	item.SetMatchLimit(keychain.MatchLimitOne)
 	item.SetReturnData(true)
@@ -60,10 +60,9 @@ func Load(group string, account string, user string) (pass string, err error) {
 	return
 }
 
-// Delete will attempt to delete the password item from the keychain
-//   group: the access group, used by suite of apps to share same keychain data
-//   name: the item name
-//   account: the account name
+// Delete will attempt to delete the password item from the keychain.  Group is
+// the access group.  Name is the keychain item name.  Account is the account
+// for which we wish to delete the password.
 func Delete(group string, name string, account string) (err error) {
 	// populate enough to delete any existing value
 	item := keychain.NewItem()

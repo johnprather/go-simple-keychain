@@ -31,12 +31,8 @@ name := "inventory api"
 account := "root"
 password := "somepass"
 
-// will this password be only available on this device?
-
-sync := false
-
 // save a password
-err := simpleKeychain.Save(group, name, account, password, sync)
+err := simpleKeychain.Save(group, name, account, password)
 
 
 // load a password

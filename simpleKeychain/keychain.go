@@ -16,7 +16,7 @@ var ErrKeyChainItemNotFound = errors.New("keychain item not found")
 //   user: the account for the keychain item
 //   pass: the password to save
 //   sync: the keychain item may be synced (icloud?), use false to keep local
-func Save(group string, name string, user string, pass string, sync bool) error {
+func Save(group string, name string, user string, pass string) error {
 	// populate enough to delete any existing value
 	item := keychain.NewItem()
 	item.SetSecClass(keychain.SecClassGenericPassword)
@@ -28,15 +28,9 @@ func Save(group string, name string, user string, pass string, sync bool) error 
 	item.SetLabel(name)
 	item.SetAccessGroup(group)
 	item.SetData([]byte(pass))
-	if sync {
-		item.SetSynchronizable(keychain.SynchronizableYes)
-		item.SetAccessible(keychain.AccessibleAlways)
-	} else {
-		item.SetSynchronizable(keychain.SynchronizableNo)
-		item.SetAccessible(keychain.AccessibleAccessibleAlwaysThisDeviceOnly)
-	}
+	item.SetSynchronizable(keychain.SynchronizableNo)
+	item.SetAccessible(keychain.AccessibleAccessibleAlwaysThisDeviceOnly)
 
-	item.SetAccessible(keychain.AccessibleAlways)
 	err := keychain.AddItem(item)
 	return err
 }
